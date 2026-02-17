@@ -1,0 +1,137 @@
+-- SQL Data Warehouse - Customer Retention Tables
+
+
+-- Drop tables if they exist (for clean re-runs)
+IF OBJECT_ID('dbo.CustomerChurn', 'U') IS NOT NULL 
+    DROP TABLE dbo.CustomerChurn;
+IF OBJECT_ID('dbo.CustomerUsage', 'U') IS NOT NULL 
+    DROP TABLE dbo.CustomerUsage;
+IF OBJECT_ID('dbo.CustomerSupport', 'U') IS NOT NULL 
+    DROP TABLE dbo.CustomerSupport;
+IF OBJECT_ID('dbo.CustomerDemographics', 'U') IS NOT NULL 
+    DROP TABLE dbo.CustomerDemographics;
+
+
+-- Table 1: Customer Demographics
+
+CREATE TABLE dbo.CustomerDemographics (
+    CustomerID INT PRIMARY KEY,
+    FirstName NVARCHAR(50),
+    LastName NVARCHAR(50),
+    Email NVARCHAR(100),
+    Phone NVARCHAR(20),
+    DateOfBirth DATE,
+    Gender NVARCHAR(10),
+    Address NVARCHAR(200),
+    City NVARCHAR(50),
+    State NVARCHAR(50),
+    ZipCode NVARCHAR(10),
+    Country NVARCHAR(50),
+    AccountCreatedDate DATE,
+    CustomerSegment NVARCHAR(50),
+    AnnualIncome DECIMAL(10,2),
+    EmploymentStatus NVARCHAR(50),
+    MaritalStatus NVARCHAR(20),
+    CreatedDate DATETIME DEFAULT GETDATE(),
+    UpdatedDate DATETIME DEFAULT GETDATE()
+);
+
+
+-- Table 2: Customer Usage
+
+CREATE TABLE dbo.CustomerUsage (
+    UsageID INT PRIMARY KEY IDENTITY(1,1),
+    CustomerID INT NOT NULL,
+    UsageDate DATE NOT NULL,
+    ProductID NVARCHAR(50),
+    ProductCategory NVARCHAR(50),
+    UsageMinutes INT,
+    DataUsageGB DECIMAL(10,2),
+    TransactionCount INT,
+    SessionCount INT,
+    FeatureUsageCount INT,
+    LoginCount INT,
+    TotalSpend DECIMAL(10,2),
+    DiscountApplied DECIMAL(10,2),
+    CreatedDate DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (CustomerID) REFERENCES dbo.CustomerDemographics(CustomerID)
+);
+
+
+-- Table 3: Customer Support
+
+CREATE TABLE dbo.CustomerSupport (
+    TicketID INT PRIMARY KEY IDENTITY(1,1),
+    CustomerID INT NOT NULL,
+    TicketDate DATE NOT NULL,
+    IssueCategory NVARCHAR(100),
+    IssueSeverity NVARCHAR(20),
+    IssueDescription NVARCHAR(500),
+    ResolutionTime INT, -- in hours
+    ResolutionStatus NVARCHAR(50),
+    SatisfactionScore INT, -- 1-5 scale
+    ChannelUsed NVARCHAR(50), -- Phone, Email, Chat, etc.
+    AgentID NVARCHAR(50),
+    EscalatedFlag BIT,
+    CreatedDate DATETIME DEFAULT GETDATE(),
+    ResolvedDate DATETIME,
+    FOREIGN KEY (CustomerID) REFERENCES dbo.CustomerDemographics(CustomerID)
+);
+
+
+-- Table 4: Customer Churn
+
+CREATE TABLE dbo.CustomerChurn (
+    ChurnID INT PRIMARY KEY IDENTITY(1,1),
+    CustomerID INT NOT NULL,
+    ChurnDate DATE,
+    ChurnFlag BIT NOT NULL, -- 1 = Churned, 0 = Active
+    ChurnReason NVARCHAR(200),
+    TenureMonths INT,
+    MonthlyCharges DECIMAL(10,2),
+    TotalCharges DECIMAL(10,2),
+    ContractType NVARCHAR(50), -- Month-to-month, One year, Two year
+    PaymentMethod NVARCHAR(50),
+    PaperlessBilling BIT,
+    HasPhoneService BIT,
+    HasInternetService BIT,
+    InternetServiceType NVARCHAR(50),
+    HasOnlineSecurity BIT,
+    HasOnlineBackup BIT,
+    HasDeviceProtection BIT,
+    HasTechSupport BIT,
+    HasStreamingTV BIT,
+    HasStreamingMovies BIT,
+    AvgMonthlyUsageGB DECIMAL(10,2),
+    TotalSupportTickets INT,
+    AvgSatisfactionScore DECIMAL(3,2),
+    ChurnProbability DECIMAL(5,4), -- Predicted probability
+    CreatedDate DATETIME DEFAULT GETDATE(),
+    UpdatedDate DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (CustomerID) REFERENCES dbo.CustomerDemographics(CustomerID)
+);
+
+
+
+
+-- Check that tables were created
+SELECT 
+    TABLE_NAME,
+    TABLE_TYPE
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_SCHEMA = 'dbo'
+AND TABLE_NAME IN ('CustomerDemographics', 'CustomerUsage', 'CustomerSupport', 'CustomerChurn')
+ORDER BY TABLE_NAME;
+
+-- View table structures
+SELECT 
+    t.TABLE_NAME,
+    c.COLUMN_NAME,
+    c.DATA_TYPE,
+    c.CHARACTER_MAXIMUM_LENGTH,
+    c.IS_NULLABLE
+FROM INFORMATION_SCHEMA.TABLES t
+INNER JOIN INFORMATION_SCHEMA.COLUMNS c ON t.TABLE_NAME = c.TABLE_NAME
+WHERE t.TABLE_SCHEMA = 'dbo'
+AND t.TABLE_NAME IN ('CustomerDemographics', 'CustomerUsage', 'CustomerSupport', 'CustomerChurn')
+ORDER BY t.TABLE_NAME, c.ORDINAL_POSITION;
