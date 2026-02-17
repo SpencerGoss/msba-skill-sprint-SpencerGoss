@@ -1,5 +1,5 @@
 -- SQLite Customer Retention Analysis Tables
--- Normalized schema based on retentiondata_case.csv
+-- based on retentiondata_case.csv dataset
 
 -- Drop tables if they exist
 DROP TABLE IF EXISTS churn_data;
