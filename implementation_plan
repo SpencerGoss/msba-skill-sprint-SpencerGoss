@@ -1,6 +1,6 @@
 # Implementation Plan - SQL Data Warehouse Project
 
-## What Does This Repo Do? (Plain Language)
+## What Does This Repo Do?
 
 This repository demonstrates how to design and create SQL database tables for customer retention data from a case competition. Case competition data and code can be found in other repository. The project includes:
 
